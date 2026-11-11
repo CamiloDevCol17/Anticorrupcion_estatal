@@ -357,6 +357,26 @@ function wireEvents() {
     submitBtn.addEventListener("click", (e) => applyFilters(e));
   }
 
+  const scanBtn = document.getElementById("f-scan");
+  if (scanBtn) {
+    scanBtn.addEventListener("click", async () => {
+      const scanBar = document.getElementById("scan-bar");
+      const scanText = document.getElementById("scan-text");
+      if (scanBar) scanBar.classList.add("is-active");
+      if (scanText) scanText.textContent = "Sincronizando contratos recientes de SECOP II y analizando anomalías...";
+      try {
+        await fetch(`${API_BASE}/api/ingest/run?lookback_days=30`, { method: "POST" });
+        setTimeout(async () => {
+          if (scanBar) scanBar.classList.remove("is-active");
+          await Promise.all([loadSummary(), loadTimeline(), loadTable(), loadTopEntidades(), loadTopProveedores()]);
+        }, 8000);
+      } catch (err) {
+        if (scanBar) scanBar.classList.remove("is-active");
+        alert("Error al iniciar actualización: " + err.message);
+      }
+    });
+  }
+
   document.getElementById("f-search").addEventListener(
     "input",
     debounce(() => applyFilters(), 350)

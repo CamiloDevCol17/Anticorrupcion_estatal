@@ -23,8 +23,13 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
+import sys
+import threading
 from pathlib import Path
 from typing import Any
+
+# Ensure project root is in sys.path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -71,18 +76,77 @@ app.add_middleware(
 )
 
 
+def _init_db_schema(conn: sqlite3.Connection) -> None:
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS contratos (
+        id_contrato TEXT PRIMARY KEY,
+        nombre_entidad TEXT,
+        departamento TEXT,
+        proveedor_adjudicado TEXT,
+        valor_del_contrato REAL,
+        fecha_de_firma TEXT,
+        modalidad_de_contratacion TEXT,
+        estado_contrato TEXT,
+        urlproceso TEXT,
+        raw_json TEXT NOT NULL,
+        ingested_at TEXT NOT NULL
+    )
+    """)
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS ingest_state (
+        dataset_id TEXT PRIMARY KEY,
+        last_cutoff TEXT NOT NULL,
+        last_run_at TEXT NOT NULL,
+        records_last_run INTEGER
+    )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_entidad ON contratos(nombre_entidad)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_proveedor ON contratos(proveedor_adjudicado)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_fecha_firma ON contratos(fecha_de_firma)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_departamento ON contratos(departamento)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_modalidad ON contratos(modalidad_de_contratacion)")
+    conn.commit()
+
+
 def get_db() -> sqlite3.Connection:
-    if not DB_PATH.exists():
-        raise HTTPException(
-            status_code=500,
-            detail=(
-                f"No se encontró la base de datos en '{DB_PATH.resolve()}'. "
-                "Corre primero main.py (la ingesta) o configura SECOP_DB_PATH."
-            ),
-        )
+    needs_init = not DB_PATH.exists()
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    if needs_init:
+        _init_db_schema(conn)
     return conn
+
+
+def _background_initial_ingest() -> None:
+    try:
+        conn = get_db()
+        count = conn.execute("SELECT COUNT(*) FROM contratos").fetchone()[0]
+        conn.close()
+        if count == 0:
+            print("📦 Base de datos vacía. Iniciando descarga automática inicial de contratos SECOP...")
+            import main
+            main.run_ingest(
+                dataset_id=main.DEFAULT_DATASET_ID,
+                since=None,
+                departamento=None,
+                key_id=os.environ.get("SECOP_KEY_ID"),
+                key_secret=os.environ.get("SECOP_KEY_SECRET"),
+                db_path=DB_PATH,
+                default_lookback_days=30,
+            )
+            print("🔍 Ejecutando escaneo inicial de irregularidades...")
+            irregularity_engine.run_full_scan()
+            print("✅ Ingesta y escaneo inicial completados con éxito.")
+    except Exception as e:
+        print(f"⚠️ Nota sobre descarga inicial: {e}")
+
+
+@app.on_event("startup")
+def startup_event() -> None:
+    conn = get_db()
+    _init_db_schema(conn)
+    conn.close()
+    threading.Thread(target=_background_initial_ingest, daemon=True).start()
 
 
 # ---------------------------------------------------------------------------
@@ -376,6 +440,32 @@ def list_municipios(departamento: str | None = None) -> list[str]:
 @app.post("/api/scan/run")
 def run_scan() -> dict[str, Any]:
     return irregularity_engine.run_full_scan()
+
+
+@app.post("/api/ingest/run")
+def trigger_ingest(lookback_days: int = Query(30, ge=1, le=365)) -> dict[str, Any]:
+    """Descarga contratos recientes de SECOP II en segundo plano y ejecuta el escaneo."""
+    def _do_ingest():
+        try:
+            import main
+            main.run_ingest(
+                dataset_id=main.DEFAULT_DATASET_ID,
+                since=None,
+                departamento=None,
+                key_id=os.environ.get("SECOP_KEY_ID"),
+                key_secret=os.environ.get("SECOP_KEY_SECRET"),
+                db_path=DB_PATH,
+                default_lookback_days=lookback_days,
+            )
+            irregularity_engine.run_full_scan()
+        except Exception as e:
+            print(f"Error en ingesta manual: {e}")
+
+    threading.Thread(target=_do_ingest, daemon=True).start()
+    return {
+        "status": "started",
+        "message": f"Ingesta en segundo plano iniciada para los últimos {lookback_days} días.",
+    }
 
 
 @app.get("/api/stats/irregularidades")
