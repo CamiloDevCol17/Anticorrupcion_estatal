@@ -1,0 +1,644 @@
+/* =====================================================================
+   VIGÍA — identidad visual
+   Referencia: expediente / gaceta oficial de contratación pública.
+   Fondo tinta oscura + fichas color papel envejecido + acentos sello
+   (rojo óxido y ocre dorado), tipografía serif institucional para
+   titulares y mono para cifras (precisión de libro contable).
+   ===================================================================== */
+
+:root {
+  --ink:        #12181F;   /* fondo principal, tinta nocturna */
+  --ink-2:      #1B222C;   /* superficies elevadas sobre tinta */
+  --paper:      #ECE6D6;   /* papel envejecido — fichas resumen */
+  --paper-dim:  #DCD4BC;
+  --rust:       #B33F32;   /* acento sello / alerta */
+  --gold:       #B9922F;   /* acento sello secundario */
+  --slate:      #96A0AC;   /* texto secundario sobre tinta */
+  --line-dark:  #2A333F;   /* hairline sobre tinta */
+  --line-paper: #CDC3A4;   /* hairline sobre papel */
+  --text-hi:    #F3EFE3;   /* texto principal sobre tinta */
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+html, body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--text-hi);
+  font-family: var(--font-body);
+}
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px 24px 64px;
+}
+
+/* ===================== MASTHEAD ===================== */
+
+.masthead {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line-dark);
+  margin-bottom: 28px;
+}
+
+.masthead__mark {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--ink);
+  background: var(--gold);
+  border-radius: 3px;
+}
+
+.masthead__title h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.masthead__title p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--slate);
+  letter-spacing: 0.02em;
+}
+
+.masthead__status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--slate);
+}
+
+.masthead__status .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--slate);
+}
+.masthead__status.is-ok .dot { background: #6E9C6B; }
+.masthead__status.is-error .dot { background: var(--rust); }
+
+/* ===================== FILTROS ===================== */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 28px;
+  padding: 16px 18px;
+  background: var(--ink-2);
+  border: 1px solid var(--line-dark);
+}
+
+.filters__group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+  flex: 1;
+}
+
+.filters__group label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--slate);
+}
+
+.filters input, .filters select {
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 9px 10px;
+  background: var(--ink);
+  border: 1px solid var(--line-dark);
+  color: var(--text-hi);
+  outline: none;
+}
+.filters input:focus, .filters select:focus {
+  border-color: var(--gold);
+}
+
+.btn {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 16px;
+  border: 1px solid var(--line-dark);
+  background: transparent;
+  color: var(--text-hi);
+  cursor: pointer;
+}
+.btn:hover { border-color: var(--gold); color: var(--gold); }
+.btn--ghost { background: transparent; }
+.btn--primary {
+  background: var(--gold);
+  color: var(--ink);
+  border-color: var(--gold);
+  font-weight: 600;
+}
+.btn--primary:hover {
+  background: #d4a838;
+  color: var(--ink);
+  border-color: #d4a838;
+}
+.btn--scan {
+  background: var(--rust);
+  color: #fff;
+  border-color: var(--rust);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 7px 14px;
+}
+.btn--scan:hover {
+  background: #c94a3d;
+  border-color: #c94a3d;
+  color: #fff;
+}
+
+.filters__actions {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+/* ===================== FICHAS RESUMEN (FOLIO) ===================== */
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.folio {
+  position: relative;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 18px 18px 16px;
+  border-top: 3px solid var(--rust);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+
+.folio__num {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+}
+
+.folio__label {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #5A5342;
+}
+
+.folio__value {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+/* ===================== PANELES / GRÁFICAS ===================== */
+
+.panels {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.panel {
+  background: var(--ink-2);
+  border: 1px solid var(--line-dark);
+}
+
+.panel--wide { grid-column: 1 / -1; }
+
+.panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line-dark);
+}
+
+.panel__head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.panel__body {
+  padding: 16px;
+  height: 260px;
+  position: relative;
+}
+
+.panel__toggle {
+  display: flex;
+  gap: 2px;
+}
+
+.toggle-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid var(--line-dark);
+  color: var(--slate);
+  cursor: pointer;
+}
+.toggle-btn.is-active {
+  color: var(--ink);
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+/* ===================== TABLA DE EXPEDIENTES ===================== */
+
+.dossier__head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.dossier__head h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  margin: 0;
+}
+
+.dossier__count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--slate);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line-dark);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+thead th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--slate);
+  font-weight: 600;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line-dark);
+  background: var(--ink-2);
+  white-space: nowrap;
+}
+
+thead th.num { text-align: right; }
+
+tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line-dark);
+  vertical-align: top;
+}
+
+tbody tr:hover { background: rgba(185, 146, 47, 0.06); }
+
+tbody td.num {
+  text-align: right;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+td.empty {
+  text-align: center;
+  color: var(--slate);
+  padding: 32px 12px;
+}
+
+.pill {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border: 1px solid var(--line-dark);
+  color: var(--slate);
+  white-space: nowrap;
+}
+
+.pill--directa {
+  border-color: var(--rust);
+  color: var(--rust);
+}
+
+.link-out {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--gold);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.link-out:hover { text-decoration: underline; }
+
+/* ===================== PAGINACIÓN ===================== */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 14px 0 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--slate);
+}
+
+/* ===================== PIE ===================== */
+
+.pagefoot {
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-dark);
+}
+.pagefoot p {
+  font-size: 12px;
+  color: var(--slate);
+  max-width: 640px;
+  line-height: 1.5;
+}
+
+/* ===================== RESPONSIVE ===================== */
+
+@media (max-width: 860px) {
+  .summary { grid-template-columns: repeat(2, 1fr); }
+  .panels { grid-template-columns: 1fr; }
+  .masthead__status { display: none; }
+}
+
+@media (max-width: 520px) {
+  .summary { grid-template-columns: 1fr; }
+  .filters__group { min-width: 100%; }
+}
+
+/* ===================== FOLIO ALERTA (riesgo) ===================== */
+
+.folio--alert {
+  border-top-color: var(--rust);
+  cursor: default;
+}
+.folio--alert .folio__value {
+  color: var(--rust);
+}
+
+/* ===================== BADGES DE RIESGO ===================== */
+
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 3px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.risk-badge:hover { opacity: 0.85; }
+
+.risk-badge--bajo {
+  background: rgba(110, 156, 107, 0.15);
+  color: #6E9C6B;
+  border: 1px solid rgba(110, 156, 107, 0.3);
+}
+.risk-badge--medio {
+  background: rgba(212, 168, 56, 0.15);
+  color: #D4A838;
+  border: 1px solid rgba(212, 168, 56, 0.3);
+}
+.risk-badge--alto {
+  background: rgba(199, 125, 60, 0.15);
+  color: #C77D3C;
+  border: 1px solid rgba(199, 125, 60, 0.3);
+}
+.risk-badge--critico {
+  background: rgba(179, 63, 50, 0.2);
+  color: #E05545;
+  border: 1px solid rgba(179, 63, 50, 0.4);
+  animation: pulse-risk 2s infinite;
+}
+
+@keyframes pulse-risk {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(179, 63, 50, 0.3); }
+  50% { box-shadow: 0 0 8px 2px rgba(179, 63, 50, 0.15); }
+}
+
+/* ===================== MODAL DE ALERTAS ===================== */
+
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+.modal-overlay.is-open {
+  display: flex;
+}
+
+.modal {
+  background: var(--ink-2);
+  border: 1px solid var(--line-dark);
+  max-width: 640px;
+  width: 92%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line-dark);
+}
+
+.modal__header h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal__close {
+  background: none;
+  border: none;
+  color: var(--slate);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+.modal__close:hover { color: var(--text-hi); }
+
+.modal__body {
+  padding: 20px;
+}
+
+.modal__contract-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 20px;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line-dark);
+  font-size: 13px;
+}
+.modal__contract-info dt {
+  color: var(--slate);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.modal__contract-info dd {
+  margin: 0 0 6px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.alert-card {
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border-left: 3px solid var(--line-dark);
+  background: rgba(255,255,255,0.02);
+}
+.alert-card--baja   { border-left-color: #6E9C6B; }
+.alert-card--media  { border-left-color: #D4A838; }
+.alert-card--alta   { border-left-color: #C77D3C; }
+.alert-card--critica { border-left-color: #E05545; }
+
+.alert-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.alert-card__rule {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.alert-card--baja .alert-card__rule   { color: #6E9C6B; }
+.alert-card--media .alert-card__rule  { color: #D4A838; }
+.alert-card--alta .alert-card__rule   { color: #C77D3C; }
+.alert-card--critica .alert-card__rule { color: #E05545; }
+
+.alert-card__score {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--slate);
+}
+
+.alert-card__desc {
+  font-size: 13px;
+  color: var(--text-hi);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* RUES enrichment card */
+.rues-card {
+  margin: 12px 0;
+  padding: 12px 16px;
+  background: rgba(110, 156, 107, 0.08);
+  border: 1px solid rgba(110, 156, 107, 0.3);
+  border-radius: 8px;
+}
+.rues-card__header {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #6E9C6B;
+  margin-bottom: 4px;
+}
+
+
+/* ===================== SCAN PROGRESS ===================== */
+
+.scan-bar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  background: var(--ink-2);
+  border: 1px solid var(--line-dark);
+  font-size: 13px;
+  color: var(--slate);
+}
+.scan-bar.is-active { display: flex; }
+
+.scan-bar__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--line-dark);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Row highlight for risky contracts */
+tr.row--alto { background: rgba(199, 125, 60, 0.05); }
+tr.row--critico { background: rgba(179, 63, 50, 0.07); }

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vigía · Expediente de contratación pública</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ===================== ENCABEZADO ===================== -->
+  <header class="masthead">
+    <div class="masthead__mark" aria-hidden="true">V</div>
+    <div class="masthead__title">
+      <h1>Vigía</h1>
+      <p>Expediente digital de contratación pública · datos SECOP II</p>
+    </div>
+    <div class="masthead__status" id="db-status">
+      <span class="dot"></span>
+      <span id="db-status-text">Verificando conexión…</span>
+    </div>
+  </header>
+
+  <!-- ===================== BARRA DE FILTROS ===================== -->
+  <form class="filters" id="filters-form" action="#" onsubmit="event.preventDefault(); return false;" aria-label="Filtros de búsqueda">
+    <div class="filters__group">
+      <label for="f-search">Buscar entidad o proveedor</label>
+      <input type="search" id="f-search" placeholder="Ej. Alcaldía de Medellín…" />
+    </div>
+    <div class="filters__group">
+      <label for="f-departamento">Departamento</label>
+      <select id="f-departamento">
+        <option value="">Todos</option>
+      </select>
+    </div>
+    <div class="filters__group">
+      <label for="f-municipio">Municipio</label>
+      <select id="f-municipio">
+        <option value="">Todos</option>
+      </select>
+    </div>
+    <div class="filters__group">
+      <label for="f-modalidad">Modalidad</label>
+      <select id="f-modalidad">
+        <option value="">Todas</option>
+      </select>
+    </div>
+    <div class="filters__group">
+      <label for="f-fecha-inicio">Desde fecha</label>
+      <input type="date" id="f-fecha-inicio" />
+    </div>
+    <div class="filters__group">
+      <label for="f-fecha-fin">Hasta fecha</label>
+      <input type="date" id="f-fecha-fin" />
+    </div>
+    <div class="filters__actions">
+      <button id="f-submit" class="btn btn--primary" type="button">Buscar</button>
+      <button id="f-clear" class="btn btn--ghost" type="button">Limpiar</button>
+    </div>
+  </form>
+
+  <!-- ===================== FICHAS RESUMEN (ESTILO FOLIO) ===================== -->
+  <section class="summary" aria-label="Resumen general">
+    <article class="folio">
+      <span class="folio__num">01</span>
+      <h2 class="folio__label">Contratos registrados</h2>
+      <p class="folio__value" id="s-total">&mdash;</p>
+    </article>
+    <article class="folio">
+      <span class="folio__num">02</span>
+      <h2 class="folio__label">Valor total (COP)</h2>
+      <p class="folio__value" id="s-valor">&mdash;</p>
+    </article>
+    <article class="folio">
+      <span class="folio__num">03</span>
+      <h2 class="folio__label">Entidades contratantes</h2>
+      <p class="folio__value" id="s-entidades">&mdash;</p>
+    </article>
+    <article class="folio">
+      <span class="folio__num">04</span>
+      <h2 class="folio__label">Proveedores adjudicados</h2>
+      <p class="folio__value" id="s-proveedores">&mdash;</p>
+    </article>
+    <article class="folio folio--alert">
+      <span class="folio__num">05</span>
+      <h2 class="folio__label">Alertas detectadas</h2>
+      <p class="folio__value" id="s-alertas">&mdash;</p>
+    </article>
+  </section>
+
+  <!-- ===================== BARRA DE ESCANEO ===================== -->
+  <div class="scan-bar" id="scan-bar">
+    <div class="scan-bar__spinner"></div>
+    <span id="scan-text">Analizando contratos en busca de irregularidades&hellip;</span>
+  </div>
+
+  <!-- ===================== GRÁFICAS ===================== -->
+  <section class="panels">
+    <article class="panel panel--wide">
+      <header class="panel__head">
+        <h2>Contratos firmados en el tiempo</h2>
+        <div class="panel__toggle" role="group" aria-label="Agrupar por">
+          <button class="toggle-btn is-active" data-group="day">Día</button>
+          <button class="toggle-btn" data-group="month">Mes</button>
+        </div>
+      </header>
+      <div class="panel__body"><canvas id="chart-timeline"></canvas></div>
+    </article>
+
+    <article class="panel">
+      <header class="panel__head"><h2>Modalidad de contratación</h2></header>
+      <div class="panel__body"><canvas id="chart-modalidades"></canvas></div>
+    </article>
+
+    <article class="panel">
+      <header class="panel__head"><h2>Entidades con más contratos</h2></header>
+      <div class="panel__body"><canvas id="chart-entidades"></canvas></div>
+    </article>
+
+    <article class="panel">
+      <header class="panel__head"><h2>Proveedores con más contratos</h2></header>
+      <div class="panel__body"><canvas id="chart-proveedores"></canvas></div>
+    </article>
+  </section>
+
+  <!-- ===================== TABLA DE EXPEDIENTES ===================== -->
+  <section class="dossier" aria-label="Listado de contratos">
+    <header class="dossier__head">
+      <h2>Expedientes</h2>
+      <span id="table-count" class="dossier__count"></span>
+    </header>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Riesgo</th>
+            <th>Fecha firma</th>
+            <th>Entidad</th>
+            <th>Proveedor</th>
+            <th class="num">Valor</th>
+            <th>Modalidad</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr><td colspan="8" class="empty">Cargando expedientes&hellip;</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="pagination">
+      <button id="p-prev" class="btn btn--ghost" type="button">← Anterior</button>
+      <span id="p-info">Página 1</span>
+      <button id="p-next" class="btn btn--ghost" type="button">Siguiente →</button>
+    </footer>
+  </section>
+
+  <footer class="pagefoot">
+    <p>Vigía es un prototipo de monitoreo ciudadano sobre datos abiertos de SECOP II. Las cifras mostradas provienen directamente del dataset público y no constituyen una acusación sobre ninguna entidad o proveedor.</p>
+  </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="apps.js"></script>
+
+<!-- ===================== MODAL DE ALERTAS ===================== -->
+<div class="modal-overlay" id="alert-modal">
+  <div class="modal">
+    <header class="modal__header">
+      <h3 id="modal-title">Alertas del contrato</h3>
+      <button class="modal__close" id="modal-close">&times;</button>
+    </header>
+    <div class="modal__body" id="modal-body">
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
