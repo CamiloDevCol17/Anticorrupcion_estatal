@@ -138,6 +138,15 @@ def init_db(conn: sqlite3.Connection) -> None:
     conn.execute(
         f"CREATE INDEX IF NOT EXISTS idx_proveedor ON {CONTRATOS_TABLE}(proveedor_adjudicado)"
     )
+    conn.execute(
+        f"CREATE INDEX IF NOT EXISTS idx_fecha_firma ON {CONTRATOS_TABLE}(fecha_de_firma)"
+    )
+    conn.execute(
+        f"CREATE INDEX IF NOT EXISTS idx_departamento ON {CONTRATOS_TABLE}(departamento)"
+    )
+    conn.execute(
+        f"CREATE INDEX IF NOT EXISTS idx_modalidad ON {CONTRATOS_TABLE}(modalidad_de_contratacion)"
+    )
     conn.commit()
 
 

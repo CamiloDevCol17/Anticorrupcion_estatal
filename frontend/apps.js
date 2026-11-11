@@ -67,7 +67,20 @@ async function checkHealth() {
   const el = document.getElementById("db-status");
   const text = document.getElementById("db-status-text");
 
-  const portsToTry = ["http://127.0.0.1:8001", "http://127.0.0.1:8000", "http://127.0.0.1:8080"];
+  const origin = (typeof window !== "undefined" && window.location && window.location.origin) 
+    ? window.location.origin 
+    : "";
+  
+  const customApi = (typeof window !== "undefined" && window.SECOP_API_URL) 
+    || (typeof localStorage !== "undefined" && localStorage.getItem("SECOP_API_URL"));
+
+  const portsToTry = [];
+  if (customApi) portsToTry.push(customApi);
+  if (origin && origin.startsWith("http") && !origin.includes("localhost") && !origin.includes("127.0.0.1")) {
+    portsToTry.push(origin);
+  }
+  portsToTry.push("http://127.0.0.1:8001", "http://127.0.0.1:8000", "http://127.0.0.1:8080");
+  if (origin && !portsToTry.includes(origin)) portsToTry.push(origin);
   let connected = false;
 
   for (const base of portsToTry) {
