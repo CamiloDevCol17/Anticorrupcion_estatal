@@ -154,3 +154,4 @@ Todos los endpoints de stats aceptan filtros: `q`, `departamento`, `municipio`, 
 ## 📜 Licencia
 
 MIT
+

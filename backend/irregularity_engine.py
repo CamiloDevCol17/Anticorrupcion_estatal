@@ -65,54 +65,54 @@ class IrregularityEngine:
         close_after = conn is None
         if conn is None:
             conn = self.get_connection()
-            cursor = conn.cursor()
-            
-            # Rule 2: percentile 95 for 'Contratacion directa'
-            cursor.execute("""
-                SELECT valor_del_contrato 
-                FROM contratos 
-                WHERE modalidad_de_contratacion IN ('Contratación directa', 'Contratacion directa')
-                ORDER BY valor_del_contrato ASC
-            """)
-            values = [row[0] for row in cursor.fetchall() if row[0] is not None]
-            if values:
-                p95_idx = int(len(values) * 0.95)
-                self.context['p95_directa'] = values[p95_idx]
+        cursor = conn.cursor()
+        
+        # Rule 2: percentile 95 for 'Contratacion directa'
+        cursor.execute("""
+            SELECT valor_del_contrato 
+            FROM contratos 
+            WHERE modalidad_de_contratacion IN ('Contratación directa', 'Contratacion directa')
+            ORDER BY valor_del_contrato ASC
+        """)
+        values = [row[0] for row in cursor.fetchall() if row[0] is not None]
+        if values:
+            p95_idx = int(len(values) * 0.95)
+            self.context['p95_directa'] = values[p95_idx]
+        else:
+            self.context['p95_directa'] = float('inf')
+
+        # Rule 7: mean and stddev by modalidad+departamento
+        cursor.execute("""
+            SELECT modalidad_de_contratacion, departamento, 
+                   AVG(valor_del_contrato) as mean_val, 
+                   COUNT(valor_del_contrato) as cnt
+            FROM contratos
+            WHERE valor_del_contrato IS NOT NULL
+            GROUP BY modalidad_de_contratacion, departamento
+        """)
+        means = {}
+        for row in cursor.fetchall():
+            mod, dep, mean_val, cnt = row
+            means[(mod, dep)] = {'mean': mean_val, 'cnt': cnt, 'variance_sum': 0.0}
+
+        cursor.execute("""
+            SELECT modalidad_de_contratacion, departamento, valor_del_contrato
+            FROM contratos
+            WHERE valor_del_contrato IS NOT NULL
+        """)
+        for row in cursor.fetchall():
+            mod, dep, val = row
+            if (mod, dep) in means:
+                means[(mod, dep)]['variance_sum'] += (val - means[(mod, dep)]['mean']) ** 2
+
+        stats = {}
+        for k, v in means.items():
+            if v['cnt'] > 1:
+                stddev = math.sqrt(v['variance_sum'] / (v['cnt'] - 1))
             else:
-                self.context['p95_directa'] = float('inf')
-
-            # Rule 7: mean and stddev by modalidad+departamento
-            cursor.execute("""
-                SELECT modalidad_de_contratacion, departamento, 
-                       AVG(valor_del_contrato) as mean_val, 
-                       COUNT(valor_del_contrato) as cnt
-                FROM contratos
-                WHERE valor_del_contrato IS NOT NULL
-                GROUP BY modalidad_de_contratacion, departamento
-            """)
-            means = {}
-            for row in cursor.fetchall():
-                mod, dep, mean_val, cnt = row
-                means[(mod, dep)] = {'mean': mean_val, 'cnt': cnt, 'variance_sum': 0.0}
-
-            cursor.execute("""
-                SELECT modalidad_de_contratacion, departamento, valor_del_contrato
-                FROM contratos
-                WHERE valor_del_contrato IS NOT NULL
-            """)
-            for row in cursor.fetchall():
-                mod, dep, val = row
-                if (mod, dep) in means:
-                    means[(mod, dep)]['variance_sum'] += (val - means[(mod, dep)]['mean']) ** 2
-
-            stats = {}
-            for k, v in means.items():
-                if v['cnt'] > 1:
-                    stddev = math.sqrt(v['variance_sum'] / (v['cnt'] - 1))
-                else:
-                    stddev = 0
-                stats[k] = {'mean': v['mean'], 'stddev': stddev}
-                
+                stddev = 0
+            stats[k] = {'mean': v['mean'], 'stddev': stddev}
+            
         self.context['stats_mod_dep'] = stats
         if close_after:
             conn.close()
